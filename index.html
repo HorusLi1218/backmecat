@@ -487,11 +487,11 @@
 
                     <div class="col-span-2 md:col-span-1 space-y-2">
                         <label class="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">品種 Breed *</label>
-                        <input type="text" class="input-style" placeholder="例：英國短毛貓">
+                        <input type="text" class="input-style required-field" placeholder="例：英國短毛貓">
                     </div>
                     <div class="col-span-2 md:col-span-1 space-y-2">
                         <label class="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">毛色 Color *</label>
-                        <input type="text" class="input-style" placeholder="例：藍色">
+                        <input type="text" class="input-style required-field" placeholder="例：藍色">
                     </div>
                     <div class="col-span-2 md:col-span-1 space-y-2">
                         <label class="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">出生日期 Birth Date *</label>
@@ -502,7 +502,7 @@
 
             <section class="glass-card p-8 bg-gradient-to-b from-white/80 to-brand-gold/10 border-brand-gold/30">
                 <h3 class="text-lg font-bold text-brand-gold flex items-center gap-3 mb-6">
-                    <i data-lucide="coins" class="w-5 h-5"></i> 第二條：價金及效力
+                    <i data-lucide="coins" class="w-5 h-5"></i> 第二條：買賣價金及契約效力
                 </h3>
                 
                 <div class="space-y-6">
@@ -510,7 +510,7 @@
                         <label class="text-xs font-bold text-brand-gold/60 uppercase tracking-wide text-center block mb-2">總價 Total Price *</label>
                         <div class="relative group">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold font-serif text-xl font-bold group-focus-within:opacity-100 opacity-70 transition-opacity">NT$</span>
-                            <input type="number" class="w-full text-center text-4xl font-serif font-bold text-brand-slate bg-transparent border-b-2 border-brand-gold/30 py-4 focus:outline-none focus:border-brand-gold transition-colors placeholder:text-gray-200" placeholder="0">
+                            <input type="number" id="totalPrice" class="w-full text-center text-4xl font-serif font-bold text-brand-slate bg-transparent border-b-2 border-brand-gold/30 py-4 focus:outline-none focus:border-brand-gold transition-colors placeholder:text-gray-200 required-field" placeholder="0">
                         </div>
                     </div>
 
@@ -912,7 +912,7 @@
                 </div>
 
                 <div id="opt-wash" class="hidden bg-brand-gold/5 p-6 rounded-xl animate-fade-in">
-                    <p class="text-xs text-brand-gold mb-4 font-bold flex items-center gap-1 uppercase tracking-wider">選擇毛髮長度 Select Hair Length</p>
+                    <p class="text-xs text-brand-gold mb-4 font-bold flex items-center gap-1 uppercase tracking-wider">毛髮類型 Coat Type</p>
                     <div class="space-y-3">
                         <label class="option-card flex items-center gap-3 p-4 bg-white/80 rounded-lg cursor-pointer shadow-sm">
                             <input type="radio" name="mainService" value="wash_short" class="hidden"> 
@@ -934,7 +934,7 @@
                 </div>
 
                 <div id="opt-shave" class="hidden bg-brand-gold/5 p-6 rounded-xl animate-fade-in">
-                    <p class="text-xs text-brand-gold mb-4 font-bold flex items-center gap-1 uppercase tracking-wider">選擇毛髮長度 Select Hair Length</p>
+                    <p class="text-xs text-brand-gold mb-4 font-bold flex items-center gap-1 uppercase tracking-wider">毛髮類型 Coat Type</p>
                     <div class="space-y-3">
                         <label class="option-card flex items-center gap-3 p-4 bg-white/80 rounded-lg cursor-pointer shadow-sm">
                             <input type="radio" name="mainService" value="shave_short" class="hidden"> 
@@ -1434,44 +1434,91 @@
             }
 
             let errors = [];
+            let firstErrorField = null;
             
             // 1. 驗證所有必填文字欄位
-            const requiredInputs = document.querySelectorAll('#view-contract .input-style.required-field, #view-contract .input-style[type="date"], #view-contract .input-style[type="number"]:not([placeholder="0"])');
+            const requiredInputs = document.querySelectorAll('#view-contract .input-style.required-field');
             requiredInputs.forEach(el => {
-                if (!validateField(el) || !el.value) {
-                    errors.push(el.placeholder || '必填欄位');
+                if (!validateField(el) || !el.value || el.value.trim() === '') {
+                    const fieldName = el.placeholder || el.previousElementSibling?.textContent || '必填欄位';
+                    errors.push(fieldName);
+                    if (!firstErrorField) firstErrorField = el;
+                    el.classList.add('shake');
+                    setTimeout(() => el.classList.remove('shake'), 500);
                 }
             });
 
             // 2. 驗證寵物性別
-            const petSexSelected = document.querySelector('input[name="petSex"]:checked');
+            const petSexSelected = document.querySelector('#view-contract input[name="petSex"]:checked');
             if (!petSexSelected) {
                 errors.push('寵物性別');
                 showToast('請選擇寵物性別', 'error');
             }
 
-            // 3. 驗證付款模式
+            // 3. 驗證品種（專門檢查）
+            const breedInput = document.querySelector('#view-contract input[placeholder="例：英國短毛貓"]');
+            if (!breedInput || !breedInput.value || breedInput.value.trim() === '') {
+                if (!errors.includes('品種')) {
+                    errors.push('品種');
+                    if (breedInput) {
+                        breedInput.classList.add('input-error', 'shake');
+                        setTimeout(() => breedInput.classList.remove('shake'), 500);
+                        if (!firstErrorField) firstErrorField = breedInput;
+                    }
+                }
+                showToast('請輸入寵物品種', 'error');
+            }
+
+            // 4. 驗證顏色（專門檢查）
+            const colorInput = document.querySelector('#view-contract input[placeholder="例：藍色"]');
+            if (!colorInput || !colorInput.value || colorInput.value.trim() === '') {
+                if (!errors.includes('毛色')) {
+                    errors.push('毛色');
+                    if (colorInput) {
+                        colorInput.classList.add('input-error', 'shake');
+                        setTimeout(() => colorInput.classList.remove('shake'), 500);
+                        if (!firstErrorField) firstErrorField = colorInput;
+                    }
+                }
+                showToast('請輸入寵物毛色', 'error');
+            }
+
+            // 5. 驗證總價（專門檢查）
+            const totalPrice = document.getElementById('totalPrice');
+            if (!totalPrice || !totalPrice.value || parseFloat(totalPrice.value) <= 0) {
+                if (!errors.includes('總價')) {
+                    errors.push('總價');
+                    if (totalPrice) {
+                        totalPrice.classList.add('input-error', 'shake');
+                        setTimeout(() => totalPrice.classList.remove('shake'), 500);
+                        if (!firstErrorField) firstErrorField = totalPrice;
+                    }
+                }
+                showToast('請輸入有效的買賣總價', 'error');
+            }
+
+            // 6. 驗證付款模式
             const paymentStructure = document.querySelector('input[name="paymentStructure"]:checked');
             if (!paymentStructure) {
                 errors.push('付款模式');
                 showToast('請選擇付款模式', 'error');
             }
 
-            // 4. 驗證支付方式
+            // 7. 驗證支付方式
             const paymentMethod = document.querySelectorAll('input[name="paymentMethod"]:checked');
             if (paymentMethod.length === 0) {
                 errors.push('支付方式');
                 showToast('請至少選擇一種支付方式', 'error');
             }
 
-            // 5. 驗證簽名
+            // 8. 驗證簽名
             const sig = document.getElementById('img-buyer');
             if (sig.classList.contains('hidden')) {
                 errors.push('買方簽名');
                 showToast('請完成簽名', 'error');
             }
 
-            // 6. 驗證契約同意
+            // 9. 驗證契約同意
             const agree = document.getElementById('contractAgree').checked;
             if (!agree) {
                 errors.push('契約同意');
@@ -1480,11 +1527,13 @@
 
             // 如果有錯誤，顯示第一個錯誤並返回
             if (errors.length > 0) {
-                showToast(`請完成：${errors[0]}`, 'error');
+                if (!firstErrorField) {
+                    showToast(`請完成必填欄位：${errors[0]}`, 'error');
+                }
                 // 滾動到第一個錯誤欄位
-                const firstError = document.querySelector('#view-contract .input-error, #view-contract .shake');
-                if (firstError) {
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (firstErrorField) {
+                    firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => firstErrorField.focus(), 300);
                 }
                 return;
             }
