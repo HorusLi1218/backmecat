@@ -19,7 +19,6 @@
                             gold: '#B08D55',     // 主色：古銅金
                             slate: '#334155',    // 文字：深岩灰
                             purple: '#9FA8DA',   // 強調：莫蘭迪紫
-                            pink: '#DCA5B0',     // 強調：莫蘭迪粉
                             border: '#E2E8F0',   // 邊框：淺灰
                         }
                     },
@@ -72,6 +71,119 @@
             background-color: #FDFBF7; 
             -webkit-tap-highlight-color: transparent; 
             overflow-x: hidden; /* 防止光球溢出導致水平滾動 */
+            touch-action: manipulation; /* 防止雙擊縮放 */
+        }
+        
+        /* iOS 100vh 修正 */
+        html, body {
+            height: -webkit-fill-available;
+        }
+        
+        /* 防止簽名時背景滾動 */
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+        
+        /* === Toast 通知系統 === */
+        .toast-container {
+            position: fixed;
+            top: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 90%;
+            width: 400px;
+        }
+        
+        .toast {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            pointer-events: auto;
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border-left: 4px solid;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.error { border-left-color: #ef4444; background: #fef2f2; }
+        .toast.success { border-left-color: #10b981; background: #f0fdf4; }
+        .toast.warning { border-left-color: #f59e0b; background: #fffbeb; }
+        .toast.info { border-left-color: #3b82f6; background: #eff6ff; }
+        
+        .toast-icon {
+            flex-shrink: 0;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        .toast.error .toast-icon { color: #ef4444; }
+        .toast.success .toast-icon { color: #10b981; }
+        .toast.warning .toast-icon { color: #f59e0b; }
+        .toast.info .toast-icon { color: #3b82f6; }
+        
+        .toast-message {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        /* === 表單驗證動畫 === */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+        
+        .input-error {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+        }
+        
+        .input-success {
+            border-color: #10b981 !important;
+            background-color: #f0fdf4 !important;
+        }
+        
+        /* === 骨架屏載入效果 === */
+        @keyframes shimmer {
+            0% { background-position: -468px 0; }
+            100% { background-position: 468px 0; }
+        }
+        
+        .skeleton {
+            animation: shimmer 1.2s ease-in-out infinite;
+            background: linear-gradient(to right, #f0f0f0 8%, #e0e0e0 18%, #f0f0f0 33%);
+            background-size: 800px 104px;
+        }
+        
+        .skeleton-text {
+            height: 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .skeleton-input {
+            height: 3.5rem;
+            border-radius: 0.5rem;
         }
         
         /* === 1. 全局噪點紋理 (Noise Texture) === */
@@ -168,7 +280,17 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
 
-        .canvas-container canvas { width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+        .canvas-container { 
+            touch-action: none; 
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .canvas-container canvas { 
+            width: 100%; 
+            height: 100%; 
+            touch-action: none; 
+            cursor: crosshair;
+        }
         .pb-safe { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
         
         /* [修改] 頂部安全距離，增加預設值以避開導航列 */
@@ -180,11 +302,14 @@
 </head>
 <body class="text-brand-slate antialiased min-h-screen pb-24 selection:bg-brand-gold/20 selection:text-brand-gold relative">
 
+    <!-- Toast 通知容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div class="noise-overlay"></div>
         <div class="absolute top-0 left-[-10%] w-96 h-96 bg-brand-gold/20 rounded-full blur-3xl mix-blend-multiply filter animate-blob opacity-70"></div>
         <div class="absolute top-0 right-[-10%] w-96 h-96 bg-brand-purple/20 rounded-full blur-3xl mix-blend-multiply filter animate-blob animation-delay-2000 opacity-70"></div>
-        <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-brand-pink/20 rounded-full blur-3xl mix-blend-multiply filter animate-blob animation-delay-4000 opacity-70"></div>
+        <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-brand-gold/20 rounded-full blur-3xl mix-blend-multiply filter animate-blob animation-delay-4000 opacity-70"></div>
     </div>
     
     <nav class="fixed top-0 w-full z-40 bg-white/70 backdrop-blur-md border-b border-white/50 px-6 py-4 flex justify-between items-center transition-all duration-300" id="navbar">
@@ -237,20 +362,20 @@
                     </div>
                 </button>
 
-                <button onclick="router('grooming')" class="glass-card p-8 text-left hover:border-brand-pink/40 hover:shadow-lg transition-all duration-500 group relative overflow-hidden h-52 flex flex-col justify-between">
-                    <div class="absolute right-0 top-0 w-32 h-32 bg-gradient-to-br from-brand-pink/10 to-transparent rounded-bl-[4rem] transition-all duration-500 group-hover:scale-110"></div>
+                <button onclick="router('grooming')" class="glass-card p-8 text-left hover:border-brand-gold/40 hover:shadow-lg transition-all duration-500 group relative overflow-hidden h-52 flex flex-col justify-between">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-gradient-to-br from-brand-gold/10 to-transparent rounded-bl-[4rem] transition-all duration-500 group-hover:scale-110"></div>
                     
                     <div class="flex items-start justify-between relative z-10">
-                        <div class="w-12 h-12 bg-white/60 backdrop-blur text-brand-pink rounded-xl flex items-center justify-center shadow-sm border border-white/50">
+                        <div class="w-12 h-12 bg-white/60 backdrop-blur text-brand-gold rounded-xl flex items-center justify-center shadow-sm border border-white/50">
                             <i data-lucide="scissors" class="w-6 h-6"></i>
                         </div>
-                        <div class="w-10 h-10 rounded-full border border-gray-200/50 flex items-center justify-center group-hover:bg-brand-pink group-hover:border-transparent group-hover:text-white transition-all duration-300 text-gray-400">
+                        <div class="w-10 h-10 rounded-full border border-gray-200/50 flex items-center justify-center group-hover:bg-brand-gold group-hover:border-transparent group-hover:text-white transition-all duration-300 text-gray-400">
                             <i data-lucide="arrow-right" class="w-4 h-4"></i>
                         </div>
                     </div>
                     
                     <div class="relative z-10 space-y-1">
-                        <span class="text-xs font-bold text-brand-pink tracking-widest uppercase block mb-1">Grooming</span>
+                        <span class="text-xs font-bold text-brand-gold tracking-widest uppercase block mb-1">Grooming</span>
                         <h3 class="text-2xl font-bold text-brand-slate">貓貓美容服務</h3>
                         <p class="text-gray-500 text-xs">專業一對一安心洗護</p>
                     </div>
@@ -592,7 +717,7 @@
         
         <div id="view-grooming" class="hidden space-y-8 pb-32 animate-fade-in">
             <div class="text-center space-y-4 pt-4 pb-8 border-b border-gray-200/50">
-                <p class="text-brand-pink text-xs font-bold tracking-widest uppercase">Grooming Service</p>
+                <p class="text-brand-gold text-xs font-bold tracking-widest uppercase">Grooming Service</p>
                 <h2 class="text-3xl font-bold text-brand-slate">寵物美容契約</h2>
             </div>
 
@@ -607,7 +732,7 @@
 
             <section class="space-y-6">
                 <h3 class="text-lg font-bold text-brand-slate flex items-center gap-3">
-                    <span class="w-1 h-6 bg-brand-pink rounded-full"></span>
+                    <span class="w-1 h-6 bg-brand-gold rounded-full"></span>
                     飼主資料 (甲方) Owner Info
                 </h3>
                 
@@ -652,7 +777,7 @@
 
             <section class="space-y-6">
                 <h3 class="text-lg font-bold text-brand-slate flex items-center gap-3">
-                    <span class="w-1 h-6 bg-brand-pink rounded-full"></span>
+                    <span class="w-1 h-6 bg-brand-gold rounded-full"></span>
                     貓咪詳細資料 Pet Details
                 </h3>
                 
@@ -732,12 +857,12 @@
                     <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3 block ml-1">過往病史 History *</label>
                     <div class="grid grid-cols-2 gap-4 mb-3">
                         <label class="option-card flex items-center justify-center gap-2 cursor-pointer py-3 rounded-lg shadow-sm">
-                            <input type="radio" name="petHistory" value="no" onchange="toggleHistory(false)" class="hidden"> 
-                            <span class="text-sm font-bold text-gray-600">無 None</span>
-                        </label>
-                        <label class="option-card flex items-center justify-center gap-2 cursor-pointer py-3 rounded-lg shadow-sm">
                             <input type="radio" name="petHistory" value="yes" onchange="toggleHistory(true)" class="hidden"> 
                             <span class="text-sm font-bold text-gray-600">有 Yes</span>
+                        </label>
+                        <label class="option-card flex items-center justify-center gap-2 cursor-pointer py-3 rounded-lg shadow-sm">
+                            <input type="radio" name="petHistory" value="no" onchange="toggleHistory(false)" class="hidden"> 
+                            <span class="text-sm font-bold text-gray-600">無 None</span>
                         </label>
                     </div>
                     
@@ -745,24 +870,24 @@
                 </div>
             </section>
 
-            <section class="glass-card p-8 bg-white/70 border-brand-pink/20">
-                <h3 class="text-lg font-bold text-brand-pink flex items-center gap-3 mb-6">
+            <section class="glass-card p-8 bg-white/70 border-brand-gold/20">
+                <h3 class="text-lg font-bold text-brand-gold flex items-center gap-3 mb-6">
                     <i data-lucide="sparkles" class="w-5 h-5"></i> 服務項目 Service *
                 </h3>
 
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <button onclick="toggleServiceType('wash')" id="btn-wash" class="p-6 border border-gray-100 rounded-xl text-center transition-all hover:bg-white hover:shadow-lg group">
-                        <i data-lucide="droplets" class="w-8 h-8 mx-auto mb-3 text-gray-300 group-hover:text-brand-pink transition-colors"></i>
+                        <i data-lucide="droplets" class="w-8 h-8 mx-auto mb-3 text-gray-300 group-hover:text-brand-gold transition-colors"></i>
                         <span class="block font-bold text-gray-600">精緻美容洗</span>
                     </button>
                     <button onclick="toggleServiceType('shave')" id="btn-shave" class="p-6 border border-gray-100 rounded-xl text-center transition-all hover:bg-white hover:shadow-lg group">
-                        <i data-lucide="scissors" class="w-8 h-8 mx-auto mb-3 text-gray-300 group-hover:text-brand-pink transition-colors"></i>
+                        <i data-lucide="scissors" class="w-8 h-8 mx-auto mb-3 text-gray-300 group-hover:text-brand-gold transition-colors"></i>
                         <span class="block font-bold text-gray-600">剃毛美容</span>
                     </button>
                 </div>
 
-                <div id="opt-wash" class="hidden bg-brand-pink/5 p-6 rounded-xl animate-fade-in">
-                    <p class="text-xs text-brand-pink mb-4 font-bold flex items-center gap-1 uppercase tracking-wider">Select Wash Type</p>
+                <div id="opt-wash" class="hidden bg-brand-gold/5 p-6 rounded-xl animate-fade-in">
+                    <p class="text-xs text-brand-gold mb-4 font-bold flex items-center gap-1 uppercase tracking-wider">選擇毛髮長度 Select Hair Length</p>
                     <div class="space-y-3">
                         <label class="option-card flex items-center gap-3 p-4 bg-white/80 rounded-lg cursor-pointer shadow-sm">
                             <input type="radio" name="mainService" value="wash_short" class="hidden"> 
@@ -783,8 +908,8 @@
                     </div>
                 </div>
 
-                <div id="opt-shave" class="hidden bg-brand-pink/5 p-6 rounded-xl animate-fade-in">
-                    <p class="text-xs text-brand-pink mb-4 font-bold flex items-center gap-1 uppercase tracking-wider">Select Shave Type</p>
+                <div id="opt-shave" class="hidden bg-brand-gold/5 p-6 rounded-xl animate-fade-in">
+                    <p class="text-xs text-brand-gold mb-4 font-bold flex items-center gap-1 uppercase tracking-wider">選擇毛髮長度 Select Hair Length</p>
                     <div class="space-y-3">
                         <label class="option-card flex items-center gap-3 p-4 bg-white/80 rounded-lg cursor-pointer shadow-sm">
                             <input type="radio" name="mainService" value="shave_short" class="hidden"> 
@@ -828,11 +953,11 @@
                 </div>
             </section>
 
-            <section class="glass-card p-8 bg-gradient-to-br from-white/90 to-brand-pink/10 border-brand-pink/30">
-                <label class="text-xs font-bold text-brand-pink/60 uppercase tracking-wide block text-center mb-2">本次服務費用 Service Fee *</label>
+            <section class="glass-card p-8 bg-gradient-to-br from-white/90 to-brand-gold/10 border-brand-gold/30">
+                <label class="text-xs font-bold text-brand-gold/60 uppercase tracking-wide block text-center mb-2">本次服務費用 Service Fee *</label>
                 <div class="relative w-full mb-4 group">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-pink font-serif text-2xl font-bold transition-opacity opacity-70 group-focus-within:opacity-100">NT$</span>
-                    <input type="number" id="manualPrice" class="w-full text-center text-4xl font-serif font-bold text-brand-slate bg-transparent border-b-2 border-brand-pink/30 py-6 focus:outline-none focus:border-brand-pink transition-colors placeholder:text-gray-200" placeholder="0">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold font-serif text-2xl font-bold transition-opacity opacity-70 group-focus-within:opacity-100">NT$</span>
+                    <input type="number" id="manualPrice" class="w-full text-center text-4xl font-serif font-bold text-brand-slate bg-transparent border-b-2 border-brand-gold/30 py-6 focus:outline-none focus:border-brand-gold transition-colors placeholder:text-gray-200" placeholder="0">
                 </div>
                 <p class="text-[10px] text-gray-400 text-center bg-white/60 py-2 px-6 rounded-full inline-block mx-auto w-full shadow-sm backdrop-blur-sm">
                     ※ 此金額為基礎報價，特殊狀況將另行告知加價。
@@ -841,7 +966,7 @@
 
             <section class="glass-card p-6 space-y-4">
                 <div class="bg-gray-50/80 p-6 rounded-xl text-xs space-y-3 text-gray-500 border border-gray-100 leading-relaxed backdrop-blur-sm">
-                    <p class="font-bold text-brand-slate flex items-center gap-2 text-sm mb-2"><i data-lucide="alert-circle" class="w-4 h-4 text-brand-pink"></i> 服務須知 Notice</p>
+                    <p class="font-bold text-brand-slate flex items-center gap-2 text-sm mb-2"><i data-lucide="alert-circle" class="w-4 h-4 text-brand-gold"></i> 服務須知 Notice</p>
                     <ul class="list-disc pl-4 space-y-2 opacity-90">
                         <li>純貓美容，全程不麻醉、不強迫，採一對一服務。</li>
                         <li>價格為基礎報價，實際費用依貓咪狀況調整。</li>
@@ -866,7 +991,7 @@
                     </div>
                     
                     <div id="groomingMask" class="absolute bottom-0 left-0 w-full h-24 contract-mask-overlay flex items-end justify-center pb-4">
-                        <button onclick="expandContract('groomingTextContainer', 'groomingMask')" class="bg-brand-pink text-white text-xs font-bold px-6 py-2 rounded-full shadow-lg hover:bg-brand-pink/90 transition-all flex items-center gap-2 hover:shadow-glow transform hover:-translate-y-0.5">
+                        <button onclick="expandContract('groomingTextContainer', 'groomingMask')" class="bg-brand-gold text-white text-xs font-bold px-6 py-2 rounded-full shadow-lg hover:bg-brand-gold/90 transition-all flex items-center gap-2 hover:shadow-glow transform hover:-translate-y-0.5">
                             展開完整條款 Expand <i data-lucide="chevron-down" class="w-3 h-3"></i>
                         </button>
                     </div>
@@ -874,14 +999,14 @@
 
                 <div class="px-6 pb-6 border-t border-gray-100/50 pt-4 bg-gray-50/30">
                     <label class="flex items-start gap-3 cursor-pointer group">
-                        <input type="checkbox" id="groomingAgree" class="mt-1 accent-brand-pink">
-                        <span class="text-xs font-bold text-gray-600 group-hover:text-brand-pink transition-colors leading-relaxed">本人已詳閱並同意以上契約內容，且確認上述寵物資料無誤。</span>
+                        <input type="checkbox" id="groomingAgree" class="mt-1 accent-brand-gold">
+                        <span class="text-xs font-bold text-gray-600 group-hover:text-brand-gold transition-colors leading-relaxed">本人已詳閱並同意以上契約內容，且確認上述寵物資料無誤。</span>
                     </label>
                 </div>
             </section>
 
             <section class="glass-card p-6 space-y-4 relative overflow-hidden">
-                <div class="absolute -right-6 -top-6 w-32 h-32 bg-brand-pink/10 rounded-full blur-2xl"></div>
+                <div class="absolute -right-6 -top-6 w-32 h-32 bg-brand-gold/10 rounded-full blur-2xl"></div>
                 <h3 class="text-xs font-black text-gray-400 uppercase tracking-wider flex items-center gap-2 relative z-10">
                     <i data-lucide="store" class="w-3 h-3"></i> 乙方 (業者資訊) Company Info
                 </h3>
@@ -900,10 +1025,10 @@
             </section>
 
             <section class="glass-card p-6 space-y-4">
-                <div onclick="openSignatureModal('owner')" class="bg-white/60 border-2 border-dashed border-gray-300 h-44 rounded-xl flex items-center justify-center cursor-pointer hover:border-brand-pink hover:bg-brand-pink/5 transition-all duration-300 relative overflow-hidden group active:scale-[0.99]">
+                <div onclick="openSignatureModal('owner')" class="bg-white/60 border-2 border-dashed border-gray-300 h-44 rounded-xl flex items-center justify-center cursor-pointer hover:border-brand-gold hover:bg-brand-gold/5 transition-all duration-300 relative overflow-hidden group active:scale-[0.99]">
                     <img id="img-owner" class="hidden h-full w-full object-contain p-6 absolute inset-0 bg-white">
-                    <div id="placeholder-owner" class="text-xs font-bold text-gray-400 flex flex-col items-center gap-3 group-hover:text-brand-pink transition-colors tracking-widest uppercase">
-                        <div class="w-12 h-12 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm group-hover:bg-brand-pink group-hover:text-white transition-colors duration-300 border border-gray-100">
+                    <div id="placeholder-owner" class="text-xs font-bold text-gray-400 flex flex-col items-center gap-3 group-hover:text-brand-gold transition-colors tracking-widest uppercase">
+                        <div class="w-12 h-12 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm group-hover:bg-brand-gold group-hover:text-white transition-colors duration-300 border border-gray-100">
                             <i data-lucide="pen-tool" class="w-5 h-5"></i>
                         </div>
                         點擊簽署 (甲方) SIGNATURE
@@ -954,6 +1079,127 @@
         // 2. 全域變數
         let signaturePad = null;
         let currentSigId = null;
+        let isSubmitting = false; // 防止重複提交
+
+        // === Toast 通知系統 ===
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                error: 'alert-circle',
+                success: 'check-circle',
+                warning: 'alert-triangle',
+                info: 'info'
+            };
+            
+            toast.innerHTML = `
+                <i data-lucide="${icons[type]}" class="toast-icon"></i>
+                <span class="toast-message">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+            
+            // 觸發動畫
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // 3秒後自動移除
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        // === 表單驗證系統 ===
+        const validators = {
+            name: (value) => {
+                if (!value || value.trim().length < 2) return '請輸入有效的姓名（至少2個字）';
+                return null;
+            },
+            phone: (value) => {
+                const phoneRegex = /^09\d{8}$/;
+                if (!value) return '請輸入電話號碼';
+                if (!phoneRegex.test(value.replace(/-/g, ''))) return '請輸入有效的手機號碼（09開頭10碼）';
+                return null;
+            },
+            email: (value) => {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!value) return '請輸入電子郵件';
+                if (!emailRegex.test(value)) return '請輸入有效的電子郵件格式';
+                return null;
+            },
+            idNumber: (value) => {
+                const idRegex = /^[A-Z][12]\d{8}$/;
+                if (!value) return '請輸入身分證字號';
+                if (!idRegex.test(value.toUpperCase())) return '請輸入有效的身分證字號格式';
+                return null;
+            },
+            required: (value) => {
+                if (!value || (typeof value === 'string' && value.trim() === '')) {
+                    return '此欄位為必填';
+                }
+                return null;
+            }
+        };
+
+        // 驗證單一欄位
+        function validateField(input) {
+            const value = input.value;
+            const type = input.type;
+            const placeholder = input.placeholder;
+            let error = null;
+
+            // 根據欄位類型選擇驗證器
+            if (placeholder.includes('姓名') || placeholder.includes('Name')) {
+                error = validators.name(value);
+            } else if (type === 'tel' || placeholder.includes('電話')) {
+                error = validators.phone(value);
+            } else if (type === 'email') {
+                error = validators.email(value);
+            } else if (placeholder.includes('身分證')) {
+                error = validators.idNumber(value);
+            } else if (input.classList.contains('required-field') || input.classList.contains('required-grooming')) {
+                error = validators.required(value);
+            }
+
+            // 更新 UI
+            if (error) {
+                input.classList.add('input-error', 'shake');
+                input.classList.remove('input-success');
+                setTimeout(() => input.classList.remove('shake'), 500);
+                return false;
+            } else if (value) {
+                input.classList.add('input-success');
+                input.classList.remove('input-error');
+                return true;
+            } else {
+                input.classList.remove('input-error', 'input-success');
+                return true;
+            }
+        }
+
+        // 即時驗證綁定
+        function setupRealtimeValidation() {
+            const allInputs = document.querySelectorAll('.input-style');
+            
+            allInputs.forEach(input => {
+                // blur 事件：失去焦點時驗證
+                input.addEventListener('blur', () => {
+                    validateField(input);
+                });
+
+                // input 事件：輸入時即時反饋（延遲500ms避免過於頻繁）
+                let timeout;
+                input.addEventListener('input', () => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => {
+                        if (input.value) validateField(input);
+                    }, 500);
+                });
+            });
+        }
 
         // --- 核心工具：調整畫布大小 (解決 Retina 螢幕模糊與尺寸問題) ---
         // ★ 之前就是缺少這一段導致無法簽名 ★
@@ -1027,7 +1273,7 @@
             }, 300);
         }
 
-        // --- 簽名板邏輯 (包含隱藏導航列修復) ---
+        // --- 簽名板邏輯 (包含隱藏導航列修復與背景滾動鎖定) ---
         function openSignatureModal(id) {
             currentSigId = id;
             const modal = document.getElementById('signatureModal');
@@ -1037,7 +1283,10 @@
             // 1. 隱藏導航列 (避免遮擋)
             if (navbar) navbar.classList.add('hidden');
             
-            // 2. 顯示 Modal
+            // 2. 鎖定背景滾動
+            document.body.classList.add('modal-open');
+            
+            // 3. 顯示 Modal
             modal.classList.remove('hidden');
             
             // 3. 等待 DOM 渲染後執行初始化
@@ -1078,6 +1327,9 @@
                 
                 // 關閉時把導航列顯示回來
                 if (navbar) navbar.classList.remove('hidden');
+                
+                // 解除背景滾動鎖定
+                document.body.classList.remove('modal-open');
             }, 300);
         }
 
@@ -1087,7 +1339,7 @@
 
         function saveSignature() {
             if (!signaturePad || signaturePad.isEmpty()) {
-                alert("⚠️ 請先簽名後再點擊完成");
+                showToast('請先簽名後再點擊完成', 'warning');
                 return;
             }
             
@@ -1119,42 +1371,89 @@
             closeSignatureModal();
         }
         
-        // --- 表單送出邏輯 ---
+        // --- 表單送出邏輯（買賣契約）---
         function submitContract() {
-            const required = document.querySelectorAll('#view-contract .required-field');
-            let isValid = true;
-            required.forEach(el => {
-                if (!el.value) {
-                    isValid = false;
-                    el.classList.add('ring-2', 'ring-red-400', 'bg-red-50'); 
-                } else {
-                    el.classList.remove('ring-2', 'ring-red-400', 'bg-red-50');
+            // 防止重複提交
+            if (isSubmitting) {
+                showToast('正在處理中，請稍候...', 'warning');
+                return;
+            }
+
+            let errors = [];
+            
+            // 1. 驗證所有必填文字欄位
+            const requiredInputs = document.querySelectorAll('#view-contract .input-style.required-field, #view-contract .input-style[type="date"], #view-contract .input-style[type="number"]:not([placeholder="0"])');
+            requiredInputs.forEach(el => {
+                if (!validateField(el) || !el.value) {
+                    errors.push(el.placeholder || '必填欄位');
                 }
             });
 
+            // 2. 驗證寵物性別
+            const petSexSelected = document.querySelector('input[name="petSex"]:checked');
+            if (!petSexSelected) {
+                errors.push('寵物性別');
+                showToast('請選擇寵物性別', 'error');
+            }
+
+            // 3. 驗證付款模式
+            const paymentStructure = document.querySelector('input[name="paymentStructure"]:checked');
+            if (!paymentStructure) {
+                errors.push('付款模式');
+                showToast('請選擇付款模式', 'error');
+            }
+
+            // 4. 驗證支付方式
+            const paymentMethod = document.querySelectorAll('input[name="paymentMethod"]:checked');
+            if (paymentMethod.length === 0) {
+                errors.push('支付方式');
+                showToast('請至少選擇一種支付方式', 'error');
+            }
+
+            // 5. 驗證簽名
             const sig = document.getElementById('img-buyer');
-            if (sig.classList.contains('hidden')) isValid = false;
+            if (sig.classList.contains('hidden')) {
+                errors.push('買方簽名');
+                showToast('請完成簽名', 'error');
+            }
 
+            // 6. 驗證契約同意
             const agree = document.getElementById('contractAgree').checked;
-
-            if (!isValid) {
-                alert("⚠️ 請填寫所有必填欄位並完成簽名");
-                return;
-            }
             if (!agree) {
-                alert("⚠️ 請勾選同意契約條款");
+                errors.push('契約同意');
+                showToast('請勾選同意契約條款', 'error');
+            }
+
+            // 如果有錯誤，顯示第一個錯誤並返回
+            if (errors.length > 0) {
+                showToast(`請完成：${errors[0]}`, 'error');
+                // 滾動到第一個錯誤欄位
+                const firstError = document.querySelector('#view-contract .input-error, #view-contract .shake');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
                 return;
             }
 
+            // 開始提交
+            isSubmitting = true;
             const btn = event.currentTarget;
             const originalText = btn.innerHTML;
+            btn.disabled = true;
             btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin w-5 h-5"></i> Processing...`;
             lucide.createIcons();
 
+            // 模擬提交
             setTimeout(() => {
-                alert("✅ 契約已成功送出！");
+                showToast('契約已成功送出！', 'success');
                 btn.innerHTML = originalText;
-                router('home');
+                btn.disabled = false;
+                isSubmitting = false;
+                
+                // 延遲返回首頁
+                setTimeout(() => {
+                    router('home');
+                }, 1000);
             }, 1500);
         }
         
@@ -1195,75 +1494,189 @@
             const optWash = document.getElementById('opt-wash');
             const optShave = document.getElementById('opt-shave');
 
-            const activeClasses = ['border-brand-gold', 'bg-brand-gold/5', 'text-brand-gold', 'shadow-sm'];
+            const activeClasses = ['border-brand-gold', 'bg-brand-gold/5', 'text-brand-gold', 'shadow-lg'];
             
             const resetBtn = (btn) => {
+                if (!btn) return;
                 btn.classList.remove(...activeClasses);
-                btn.querySelector('i').classList.remove('text-brand-gold');
-                btn.querySelector('i').classList.add('text-gray-300');
-                btn.querySelector('span').classList.remove('text-brand-gold');
-                btn.querySelector('span').classList.add('text-gray-600');
+                const icon = btn.querySelector('i');
+                const span = btn.querySelector('span');
+                if (icon) {
+                    icon.classList.remove('text-brand-gold');
+                    icon.classList.add('text-gray-300');
+                }
+                if (span) {
+                    span.classList.remove('text-brand-gold', 'font-bold');
+                    span.classList.add('text-gray-600');
+                }
             };
             
             const activeBtn = (btn) => {
+                if (!btn) return;
                 btn.classList.add(...activeClasses);
-                btn.querySelector('i').classList.remove('text-gray-300');
-                btn.querySelector('i').classList.add('text-brand-gold');
-                btn.querySelector('span').classList.remove('text-gray-600');
-                btn.querySelector('span').classList.add('text-brand-gold');
+                const icon = btn.querySelector('i');
+                const span = btn.querySelector('span');
+                if (icon) {
+                    icon.classList.remove('text-gray-300');
+                    icon.classList.add('text-brand-gold');
+                }
+                if (span) {
+                    span.classList.remove('text-gray-600');
+                    span.classList.add('text-brand-gold', 'font-bold');
+                }
             };
             
             if (type === 'wash') {
                 activeBtn(btnWash);
                 resetBtn(btnShave);
-                optWash.classList.remove('hidden');
-                optShave.classList.add('hidden');
+                if (optWash) optWash.classList.remove('hidden');
+                if (optShave) optShave.classList.add('hidden');
             } else {
                 activeBtn(btnShave);
                 resetBtn(btnWash);
-                optShave.classList.remove('hidden');
-                optWash.classList.add('hidden');
+                if (optShave) optShave.classList.remove('hidden');
+                if (optWash) optWash.classList.add('hidden');
             }
         }
 
+        // --- 表單送出邏輯（美容契約）---
         function submitGrooming() {
-            const required = document.querySelectorAll('.required-grooming');
-            let isValid = true;
-            required.forEach(el => { 
-                if(!el.value) {
-                    isValid = false;
-                    el.classList.add('ring-2', 'ring-red-400', 'bg-red-50');
-                } else {
-                    el.classList.remove('ring-2', 'ring-red-400', 'bg-red-50');
+            // 防止重複提交
+            if (isSubmitting) {
+                showToast('正在處理中，請稍候...', 'warning');
+                return;
+            }
+
+            let errors = [];
+
+            // 1. 驗證所有必填文字欄位
+            const requiredInputs = document.querySelectorAll('.required-grooming');
+            requiredInputs.forEach(el => {
+                if (!validateField(el) || !el.value) {
+                    errors.push(el.placeholder || '必填欄位');
                 }
             });
 
+            // 2. 驗證寵物性別
+            const petSex = document.querySelector('input[name="petSex"]:checked');
+            if (!petSex) {
+                errors.push('寵物性別');
+                showToast('請選擇寵物性別', 'error');
+            }
+
+            // 3. 驗證結紮狀態
+            const petNeuter = document.querySelector('input[name="petNeuter"]:checked');
+            if (!petNeuter) {
+                errors.push('結紮狀態');
+                showToast('請選擇結紮狀態', 'error');
+            }
+
+            // 4. 驗證晶片資訊
+            const petChip = document.querySelector('input[name="petChip"]:checked');
+            if (!petChip) {
+                errors.push('晶片資訊');
+                showToast('請選擇晶片狀態', 'error');
+            } else if (petChip.value === 'has') {
+                // 如果選擇「有晶片」，必須填寫晶片號碼
+                const chipInput = document.querySelector('#chipInputContainer input');
+                if (!chipInput || !chipInput.value || chipInput.value.trim() === '') {
+                    errors.push('晶片號碼');
+                    showToast('請輸入完整晶片號碼', 'error');
+                    if (chipInput) {
+                        chipInput.classList.add('input-error', 'shake');
+                        setTimeout(() => chipInput.classList.remove('shake'), 500);
+                    }
+                }
+            }
+
+            // 5. 驗證過往病史
+            const petHistory = document.querySelector('input[name="petHistory"]:checked');
+            if (!petHistory) {
+                errors.push('過往病史');
+                showToast('請選擇是否有過往病史', 'error');
+            } else if (petHistory.value === 'yes') {
+                // 如果選擇「有」病史，必須填寫詳細說明
+                const historyDetail = document.getElementById('historyDetail');
+                if (!historyDetail || !historyDetail.value || historyDetail.value.trim() === '') {
+                    errors.push('病史詳細說明');
+                    showToast('請詳細說明病史', 'error');
+                    if (historyDetail) {
+                        historyDetail.classList.add('input-error', 'shake');
+                        setTimeout(() => historyDetail.classList.remove('shake'), 500);
+                    }
+                }
+            }
+
+            // 6. 驗證服務項目（任選一項即可）
+            const mainService = document.querySelector('input[name="mainService"]:checked');
+            if (!mainService) {
+                errors.push('服務項目');
+                showToast('請選擇服務項目', 'error');
+            }
+
+            // 7. 驗證服務費用
+            const serviceFee = document.getElementById('manualPrice');
+            if (!serviceFee.value || serviceFee.value <= 0) {
+                errors.push('服務費用');
+                showToast('請輸入服務費用', 'error');
+                serviceFee.classList.add('shake');
+                setTimeout(() => serviceFee.classList.remove('shake'), 500);
+            }
+
+            // 8. 驗證簽名
             const sig = document.getElementById('img-owner');
+            if (sig.classList.contains('hidden')) {
+                errors.push('飼主簽名');
+                showToast('請完成簽名', 'error');
+            }
+
+            // 9. 驗證契約同意
             const agree = document.getElementById('groomingAgree').checked;
-
-            if (!isValid || sig.classList.contains('hidden')) {
-                alert("⚠️ 請填寫完整預約資料與簽名");
-                return;
-            }
             if (!agree) {
-                alert("⚠️ 請同意服務條款");
+                errors.push('契約同意');
+                showToast('請勾選同意契約條款', 'error');
+            }
+
+            // 如果有錯誤，返回
+            if (errors.length > 0) {
+                showToast(`請完成：${errors[0]}`, 'error');
+                const firstError = document.querySelector('.input-error, .shake');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
                 return;
             }
 
+            // 開始提交
+            isSubmitting = true;
             const btn = event.currentTarget;
             const originalText = btn.innerHTML;
+            btn.disabled = true;
             btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin w-4 h-4"></i> Booking...`;
             lucide.createIcons();
 
+            // 模擬提交
             setTimeout(() => {
-                alert("✅ 預約已成功送出！我們會盡快與您聯繫確認。");
+                showToast('預約已成功送出！我們會盡快與您聯繫確認。', 'success');
                 btn.innerHTML = originalText;
-                router('home');
+                btn.disabled = false;
+                isSubmitting = false;
+                
+                setTimeout(() => {
+                    router('home');
+                }, 1000);
             }, 1500);
         }
 
-        document.querySelectorAll('input[type="date"]').forEach(el => {
-            if (!el.value) el.valueAsDate = new Date();
+        // === 初始化 ===
+        document.addEventListener('DOMContentLoaded', () => {
+            // 設定日期預設值為今天
+            document.querySelectorAll('input[type="date"]').forEach(el => {
+                if (!el.value) el.valueAsDate = new Date();
+            });
+            
+            // 綁定即時驗證
+            setupRealtimeValidation();
         });
         
         // 監聽視窗旋轉，確保簽名板尺寸正確
@@ -1273,6 +1686,13 @@
                 resizeCanvas(canvas);
             }
         });
+        
+        // 防止簽名時的滾動穿透（針對觸控裝置）
+        document.addEventListener('touchmove', (e) => {
+            if (document.body.classList.contains('modal-open')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
