@@ -19,6 +19,7 @@
                             gold: '#B08D55',     // 主色：古銅金
                             slate: '#334155',    // 文字：深岩灰
                             purple: '#9FA8DA',   // 強調：莫蘭迪紫
+                            pink: '#DCA5B0',     // 強調：莫蘭迪粉
                             border: '#E2E8F0',   // 邊框：淺灰
                         }
                     },
@@ -105,6 +106,7 @@
             background: white;
             border-radius: 0.75rem;
             padding: 1rem 1.5rem;
+            padding-right: 3rem;
             box-shadow: 0 10px 40px rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
@@ -114,6 +116,7 @@
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             border-left: 4px solid;
+            position: relative;
         }
         
         .toast.show {
@@ -140,6 +143,28 @@
             font-size: 0.875rem;
             font-weight: 600;
             color: #1e293b;
+            flex: 1;
+        }
+        
+        .toast-close {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1.5rem;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+            color: #94a3b8;
+        }
+        
+        .toast-close:hover {
+            background: rgba(0,0,0,0.05);
+            color: #64748b;
         }
         
         /* === 表單驗證動畫 === */
@@ -362,20 +387,20 @@
                     </div>
                 </button>
 
-                <button onclick="router('grooming')" class="glass-card p-8 text-left hover:border-brand-gold/40 hover:shadow-lg transition-all duration-500 group relative overflow-hidden h-52 flex flex-col justify-between">
-                    <div class="absolute right-0 top-0 w-32 h-32 bg-gradient-to-br from-brand-gold/10 to-transparent rounded-bl-[4rem] transition-all duration-500 group-hover:scale-110"></div>
+                <button onclick="router('grooming')" class="glass-card p-8 text-left hover:border-brand-pink/40 hover:shadow-lg transition-all duration-500 group relative overflow-hidden h-52 flex flex-col justify-between">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-gradient-to-br from-brand-pink/10 to-transparent rounded-bl-[4rem] transition-all duration-500 group-hover:scale-110"></div>
                     
                     <div class="flex items-start justify-between relative z-10">
-                        <div class="w-12 h-12 bg-white/60 backdrop-blur text-brand-gold rounded-xl flex items-center justify-center shadow-sm border border-white/50">
+                        <div class="w-12 h-12 bg-white/60 backdrop-blur text-brand-pink rounded-xl flex items-center justify-center shadow-sm border border-white/50">
                             <i data-lucide="scissors" class="w-6 h-6"></i>
                         </div>
-                        <div class="w-10 h-10 rounded-full border border-gray-200/50 flex items-center justify-center group-hover:bg-brand-gold group-hover:border-transparent group-hover:text-white transition-all duration-300 text-gray-400">
+                        <div class="w-10 h-10 rounded-full border border-gray-200/50 flex items-center justify-center group-hover:bg-brand-pink group-hover:border-transparent group-hover:text-white transition-all duration-300 text-gray-400">
                             <i data-lucide="arrow-right" class="w-4 h-4"></i>
                         </div>
                     </div>
                     
                     <div class="relative z-10 space-y-1">
-                        <span class="text-xs font-bold text-brand-gold tracking-widest uppercase block mb-1">Grooming</span>
+                        <span class="text-xs font-bold text-brand-pink tracking-widest uppercase block mb-1">Grooming</span>
                         <h3 class="text-2xl font-bold text-brand-slate">貓貓美容服務</h3>
                         <p class="text-gray-500 text-xs">專業一對一安心洗護</p>
                     </div>
@@ -419,7 +444,7 @@
 
                     <div class="md:col-span-2 space-y-2">
                         <label class="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">地址 Address *</label>
-                        <input type="text" class="input-style" placeholder="請輸入完整地址">
+                        <input type="text" class="input-style required-field" placeholder="請輸入完整地址">
                     </div>
                     
                      <div class="md:col-span-2 space-y-2">
@@ -1082,7 +1107,7 @@
         let isSubmitting = false; // 防止重複提交
 
         // === Toast 通知系統 ===
-        function showToast(message, type = 'info') {
+        function showToast(message, type = 'info', duration = 3000) {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -1097,6 +1122,9 @@
             toast.innerHTML = `
                 <i data-lucide="${icons[type]}" class="toast-icon"></i>
                 <span class="toast-message">${message}</span>
+                <button class="toast-close" aria-label="關閉通知">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
             `;
             
             container.appendChild(toast);
@@ -1105,11 +1133,20 @@
             // 觸發動畫
             setTimeout(() => toast.classList.add('show'), 10);
             
-            // 3秒後自動移除
-            setTimeout(() => {
+            // 自動移除（可配置時長）
+            const autoRemove = setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 400);
-            }, 3000);
+            }, duration);
+            
+            // 手動關閉按鈕事件
+            const closeBtn = toast.querySelector('.toast-close');
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                clearTimeout(autoRemove);
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            });
         }
 
         // === 表單驗證系統 ===
@@ -1296,10 +1333,10 @@
                 // 4. 調整畫布大小 (這裡會呼叫上面補回來的 resizeCanvas)
                 resizeCanvas(canvas);
 
-                // 5. 初始化或重置簽名板
+                // 5. 初始化或重置簽名板（白色背景）
                 if (!signaturePad) {
                     signaturePad = new SignaturePad(canvas, {
-                        backgroundColor: 'rgba(255, 255, 255, 0)', 
+                        backgroundColor: 'rgb(255, 255, 255)', // 白色背景
                         penColor: '#1e293b', 
                         minWidth: 1.5,        
                         maxWidth: 4.5,        
@@ -1330,6 +1367,14 @@
                 
                 // 解除背景滾動鎖定
                 document.body.classList.remove('modal-open');
+                
+                // 取消後自動滾動到底部
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: document.body.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 100);
             }, 300);
         }
 
@@ -1343,7 +1388,8 @@
                 return;
             }
             
-            const dataUrl = signaturePad.toDataURL("image/png");
+            // 使用压缩 JPEG 格式（0.85 品质）配合白色背景
+            const dataUrl = signaturePad.toDataURL("image/jpeg", 0.85);
             
             const imgEl = document.getElementById(`img-${currentSigId}`);
             const placeholderEl = document.getElementById(`placeholder-${currentSigId}`);
@@ -1369,6 +1415,14 @@
             }
 
             closeSignatureModal();
+            
+            // 完成簽名後自動滾動到底部
+            setTimeout(() => {
+                window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 400);
         }
         
         // --- 表單送出邏輯（買賣契約）---
