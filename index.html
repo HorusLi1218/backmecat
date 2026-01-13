@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>貝可米努奶喵館 | 數位服務系統</title>
+    <title>貝可米奶喵館 | 數位服務系統</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -27,6 +27,7 @@
                     animation: {
                         float: 'float 6s ease-in-out infinite',
                         'fade-in': 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+                        'slide-up': 'slideUp 0.3s ease-out forwards',
                     },
                     keyframes: {
                         float: {
@@ -36,11 +37,16 @@
                         fadeIn: {
                             'from': { opacity: '0', transform: 'translateY(10px)' },
                             'to': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideUp: {
+                            'from': { opacity: '0', transform: 'translateY(20px)' },
+                            'to': { opacity: '1', transform: 'translateY(0)' },
                         }
                     },
                     boxShadow: {
-                        'glow-purple': '0 0 20px -5px rgba(109, 125, 191, 0.4)',
-                        'glow-pink': '0 0 20px -5px rgba(224, 137, 155, 0.4)',
+                        'glow-purple': '0 0 25px -5px rgba(109, 125, 191, 0.3)',
+                        'glow-pink': '0 0 25px -5px rgba(224, 137, 155, 0.3)',
+                        'card': '0 10px 40px -10px rgba(168, 153, 133, 0.15)',
                     }
                 }
             }
@@ -57,11 +63,12 @@
         
         /* 玻璃擬態卡片 - 優化陰影與邊框 */
         .glass-card { 
-            background: rgba(255, 255, 255, 0.85); 
-            backdrop-filter: blur(16px); 
-            border: 1px solid rgba(255, 255, 255, 0.9); 
+            background: rgba(255, 255, 255, 0.9); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.95); 
             border-radius: 1.5rem; 
-            box-shadow: 0 10px 40px -10px rgba(168, 153, 133, 0.15);
+            box-shadow: 0 10px 40px -10px rgba(168, 153, 133, 0.1);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
@@ -71,11 +78,11 @@
             background-color: #FAF5F0;
             border: 1px solid #EFE6DD;
             border-radius: 0.85rem;
-            padding: 0.85rem 1rem;
+            padding: 0.9rem 1rem;
             outline: none;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             color: #5D5046;
-            font-size: 0.95rem;
+            font-size: 1rem; /* 手機版字體加大 */
             font-weight: 500;
         }
         .input-style:focus {
@@ -96,6 +103,10 @@
         /* 選項卡片互動效果 */
         .option-card {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
         }
         .option-card:active {
             transform: scale(0.97);
@@ -103,9 +114,10 @@
         /* 當內部的 radio 被選中時 */
         .option-card:has(input:checked) {
             background-color: #fff;
-            border-color: currentColor; /* 會使用當前文字顏色，需在 HTML 設定 text-color */
+            border-color: currentColor; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             transform: translateY(-1px);
+            font-weight: 800;
         }
 
         /* 隱藏捲軸但保留功能 */
@@ -121,7 +133,7 @@
 </head>
 <body class="text-brand-text antialiased min-h-screen pb-24 selection:bg-brand-main/20">
 
-    <nav class="fixed top-0 w-full z-40 bg-brand-bg/80 backdrop-blur-xl border-b border-brand-main/10 px-4 py-3 flex justify-between items-center transition-all shadow-sm" id="navbar">
+    <nav class="fixed top-0 w-full z-40 bg-brand-bg/90 backdrop-blur-xl border-b border-brand-main/10 px-4 py-3 flex justify-between items-center transition-all shadow-sm" id="navbar">
         <div class="font-black text-lg italic flex items-center gap-2 text-brand-dark tracking-tighter cursor-pointer active-bounce transition-transform" onclick="router('home')">
             <img src="logo.jpg" class="w-9 h-9 rounded-full object-cover border-2 border-brand-main shadow-sm" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
             <i data-lucide="cat" class="hidden w-6 h-6 text-brand-main"></i>
@@ -140,13 +152,13 @@
                     <img src="logo.jpg" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
                     <i data-lucide="cat" class="hidden w-14 h-14"></i>
                 </div>
-                <h1 class="text-3xl font-black mb-2 tracking-tight text-brand-text drop-shadow-sm">貝可米努奶喵館</h1>
-                <p class="text-brand-dark font-bold tracking-widest uppercase text-xs">MINU CATTERY & GROOMING</p>
+                <h1 class="text-3xl font-black mb-2 tracking-tight text-brand-text drop-shadow-sm">貝可米奶喵館</h1>
+                <p class="text-brand-dark font-bold tracking-widest uppercase text-xs">BACKME CATTERY & GROOMING</p>
             </div>
 
             <div class="grid md:grid-cols-2 gap-5 w-full">
-                <button onclick="router('contract')" class="glass-card p-6 text-left border-2 border-transparent hover:border-brand-purple/30 transition-all duration-300 shadow-sm hover:shadow-glow-purple hover:-translate-y-1 active:scale-[0.98] group relative overflow-hidden h-44 flex flex-col justify-between bg-white/60">
-                    <div class="absolute -right-8 -top-8 w-40 h-40 bg-brand-purple/10 rounded-full blur-3xl group-hover:bg-brand-purple/20 transition-all duration-500"></div>
+                <button onclick="router('contract')" class="glass-card p-6 text-left border-2 border-transparent hover:border-brand-purple/30 transition-all duration-300 shadow-sm hover:shadow-glow-purple hover:-translate-y-1 active:scale-[0.98] group relative overflow-hidden h-48 flex flex-col justify-between bg-white/60">
+                    <div class="absolute -right-10 -top-10 w-48 h-48 bg-brand-purple/10 rounded-full blur-3xl group-hover:bg-brand-purple/20 transition-all duration-500"></div>
                     <div class="flex items-start justify-between relative z-10">
                         <div class="w-14 h-14 bg-brand-purple/10 text-brand-purple rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
                             <i data-lucide="file-signature" class="w-7 h-7"></i>
@@ -161,8 +173,8 @@
                     </div>
                 </button>
 
-                <button onclick="router('grooming')" class="glass-card p-6 text-left border-2 border-transparent hover:border-brand-pink/30 transition-all duration-300 shadow-sm hover:shadow-glow-pink hover:-translate-y-1 active:scale-[0.98] group relative overflow-hidden h-44 flex flex-col justify-between bg-white/60">
-                    <div class="absolute -right-8 -top-8 w-40 h-40 bg-brand-pink/10 rounded-full blur-3xl group-hover:bg-brand-pink/20 transition-all duration-500"></div>
+                <button onclick="router('grooming')" class="glass-card p-6 text-left border-2 border-transparent hover:border-brand-pink/30 transition-all duration-300 shadow-sm hover:shadow-glow-pink hover:-translate-y-1 active:scale-[0.98] group relative overflow-hidden h-48 flex flex-col justify-between bg-white/60">
+                    <div class="absolute -right-10 -top-10 w-48 h-48 bg-brand-pink/10 rounded-full blur-3xl group-hover:bg-brand-pink/20 transition-all duration-500"></div>
                     <div class="flex items-start justify-between relative z-10">
                         <div class="w-14 h-14 bg-brand-pink/10 text-brand-pink rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
                             <i data-lucide="scissors" class="w-7 h-7"></i>
@@ -173,14 +185,16 @@
                     </div>
                     <div class="relative z-10">
                         <h3 class="text-2xl font-black text-brand-pink mb-1 group-hover:tracking-wide transition-all">貓貓美容服務</h3>
-                        <p class="text-gray-400 text-xs font-bold">專業一對一洗護預約</p>
+                        <p class="text-gray-400 text-xs font-bold">專業一對一洗護</p>
                     </div>
                 </button>
             </div>
             
             <div class="mt-12 text-center text-brand-dark/40 text-[10px] font-medium space-y-1">
-                <p>地址：台中市西屯區福星路324號1樓</p>
+                <p>地址：台中市西屯區福星路324-1號1樓</p>
                 <p>電話：0988-733-384</p>
+                <p>電話：0906-831-591</p>
+
             </div>
         </div>
 
@@ -189,7 +203,7 @@
         <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-brand-purple/20 to-transparent text-brand-purple mb-2 shadow-sm border border-brand-purple/10">
             <i data-lucide="scroll-text" class="w-7 h-7"></i>
         </div>
-        <h2 class="text-2xl font-black tracking-tight text-brand-text">寵物買賣定型化契約書</h2>
+        <h2 class="text-2xl font-black tracking-tight text-brand-text">貝可米奶喵館<br>寵物買賣定型化契約書</h2>
         <p class="text-brand-purple text-xs font-extrabold uppercase tracking-widest bg-brand-purple/5 py-1 px-3 rounded-full inline-block">Pet Sales Contract</p>
     </div>
 
@@ -197,7 +211,7 @@
         <div class="absolute -right-6 -top-6 w-32 h-32 bg-brand-purple/5 rounded-full blur-2xl"></div>
         
         <h3 class="text-sm font-black text-brand-purple uppercase tracking-wider flex items-center gap-2 relative z-10">
-            <i data-lucide="user-circle" class="w-4 h-4"></i> 買方資訊 (甲方)
+            <i data-lucide="user-circle" class="w-4 h-4"></i> 買方資訊 (乙方)
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-10">
@@ -220,6 +234,11 @@
                 <label class="text-xs font-bold text-gray-500 block ml-1">通訊地址</label>
                 <input type="text" class="input-style pl-4 focus:ring-brand-purple/20" placeholder="請輸入完整地址">
             </div>
+            
+             <div class="md:col-span-2 space-y-1.5">
+                <label class="text-xs font-bold text-gray-500 block ml-1">出生日期</label>
+                <input type="date" class="input-style pl-4 focus:ring-brand-purple/20">
+            </div>
         </div>
     </section>
 
@@ -227,20 +246,16 @@
         <div class="absolute -left-4 top-1/2 w-32 h-32 bg-brand-purple/5 rounded-full blur-2xl"></div>
 
         <h3 class="text-sm font-black text-gray-500 uppercase tracking-wider flex items-center gap-2">
-            <i data-lucide="cat" class="w-4 h-4"></i> 標的寵物資料 (第1條)
+            <i data-lucide="cat" class="w-4 h-4"></i> 第一條：買賣標的
         </h3>
         
         <div class="grid grid-cols-2 gap-5">
             <div class="col-span-2">
                 <label class="text-xs font-bold text-gray-500 mb-2 block ml-1">寵物種類</label>
                 <div class="flex gap-3 text-brand-purple">
-                    <label class="flex-1 option-card flex items-center justify-center gap-2 cursor-pointer bg-white py-3.5 rounded-xl border border-gray-100 hover:border-brand-purple/30">
-                        <input type="radio" name="petType" value="貓" class="hidden"> 
-                        <span class="font-bold text-sm"><i data-lucide="cat" class="w-4 h-4 inline mr-1"></i> 貓</span>
-                    </label>
-                    <label class="flex-1 option-card flex items-center justify-center gap-2 cursor-pointer bg-white py-3.5 rounded-xl border border-gray-100 hover:border-brand-purple/30">
-                        <input type="radio" name="petType" value="犬" class="hidden"> 
-                        <span class="font-bold text-sm"><i data-lucide="dog" class="w-4 h-4 inline mr-1"></i> 犬</span>
+                    <label class="w-full option-card flex items-center justify-center gap-2 cursor-pointer bg-white py-4 rounded-xl border border-gray-100 hover:border-brand-purple/30 border-brand-purple/30 bg-brand-purple/5 shadow-sm">
+                        <input type="radio" name="petType" value="貓" class="hidden" checked> 
+                        <span class="font-bold text-base"><i data-lucide="cat" class="w-5 h-5 inline mr-1"></i> 貓</span>
                     </label>
                 </div>
             </div>
@@ -275,14 +290,13 @@
             <div class="col-span-2 space-y-3 bg-white/50 p-4 rounded-2xl border border-white shadow-sm">
                  <label class="text-xs font-bold text-brand-purple block flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-brand-purple/10 flex items-center justify-center"><i data-lucide="qr-code" class="w-3 h-3"></i></div> 晶片資訊</label>
                 <input type="text" class="input-style mb-2 focus:ring-brand-purple/20" placeholder="寵物晶片號碼">
-                <input type="text" class="input-style focus:ring-brand-purple/20" placeholder="來源母貓 晶片號碼">
             </div>
         </div>
     </section>
 
     <section class="glass-card p-6 bg-gradient-to-br from-brand-purple/5 to-white border-brand-purple/20">
         <h3 class="text-sm font-black text-brand-purple uppercase tracking-wider flex items-center gap-2 mb-4">
-            <i data-lucide="coins" class="w-4 h-4"></i> 價金與交付 (第2條)
+            <i data-lucide="coins" class="w-4 h-4"></i> 第二條：買賣價金及契約效力
         </h3>
         
         <div class="space-y-5">
@@ -298,19 +312,52 @@
                     <input type="date" class="input-style text-center focus:ring-brand-purple/20">
                 </div>
             </div>
-
+            
             <div class="h-px bg-brand-purple/10 w-full"></div>
 
             <div class="text-brand-purple">
-                <label class="text-xs font-bold text-gray-400 mb-2 block text-center">付款方式</label>
-                <div class="flex gap-3">
-                    <label class="flex-1 option-card flex flex-col items-center justify-center p-3 rounded-xl border border-gray-200 bg-white cursor-pointer hover:border-brand-purple/30">
-                        <input type="radio" name="payment" value="full" class="hidden">
+                <label class="text-xs font-bold text-gray-400 mb-2 block text-center">付款模式</label>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <label class="option-card flex flex-col items-center justify-center p-4 rounded-2xl border border-gray-200 bg-white cursor-pointer hover:border-brand-purple/50 transition-all active:scale-[0.98] shadow-sm h-full">
+                        <input type="radio" name="paymentStructure" value="full" class="hidden" onchange="togglePaymentFields(false)">
                         <span class="text-sm font-bold">全額付清</span>
                     </label>
-                    <label class="flex-1 option-card flex flex-col items-center justify-center p-3 rounded-xl border border-gray-200 bg-white cursor-pointer hover:border-brand-purple/30">
-                        <input type="radio" name="payment" value="deposit" class="hidden">
-                        <span class="text-sm font-bold">支付定金</span>
+                    <label class="option-card flex flex-col items-center justify-center p-4 rounded-2xl border border-gray-200 bg-white cursor-pointer hover:border-brand-purple/50 transition-all active:scale-[0.98] shadow-sm h-full">
+                        <input type="radio" name="paymentStructure" value="deposit" class="hidden" onchange="togglePaymentFields(true)">
+                        <span class="text-sm font-bold">先付定金</span>
+                    </label>
+                </div>
+
+                <div id="splitPaymentFields" class="hidden grid grid-cols-2 gap-4 animate-fade-in bg-white/50 p-4 rounded-xl border border-brand-purple/10">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-gray-500 block ml-1 text-center">定金 (NT$)</label>
+                        <input type="number" class="input-style text-center border-brand-purple/30 focus:ring-brand-purple/20" placeholder="0">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-gray-500 block ml-1 text-center">尾款 (NT$)</label>
+                        <input type="number" class="input-style text-center border-brand-purple/30 focus:ring-brand-purple/20" placeholder="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-brand-purple mt-4">
+                <label class="text-xs font-bold text-gray-400 mb-2 block text-center">支付方式 (可複選)</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="option-card flex items-center gap-2 p-3.5 rounded-xl border border-gray-200 bg-white cursor-pointer hover:border-brand-purple/30 shadow-sm">
+                        <input type="checkbox" name="paymentMethod" value="cash" class="accent-brand-purple w-4 h-4">
+                        <span class="text-sm font-bold text-gray-600">現金 / 轉帳</span>
+                    </label>
+                    <label class="option-card flex items-center gap-2 p-3.5 rounded-xl border border-gray-200 bg-white cursor-pointer hover:border-brand-purple/30 shadow-sm">
+                        <input type="checkbox" name="paymentMethod" value="card_install" class="accent-brand-purple w-4 h-4">
+                        <span class="text-sm font-bold text-gray-600">刷卡分期</span>
+                    </label>
+                    <label class="option-card flex items-center gap-2 p-3.5 rounded-xl border border-gray-200 bg-white cursor-pointer hover:border-brand-purple/30 shadow-sm">
+                        <input type="checkbox" name="paymentMethod" value="no_card_install" class="accent-brand-purple w-4 h-4">
+                        <span class="text-sm font-bold text-gray-600">無卡分期</span>
+                    </label>
+                    <label class="option-card flex items-center gap-2 p-3.5 rounded-xl border border-gray-200 bg-white cursor-pointer hover:border-brand-purple/30 shadow-sm">
+                        <input type="checkbox" name="paymentMethod" value="all_pay" class="accent-brand-purple w-4 h-4">
+                        <span class="text-sm font-bold text-gray-600">全支付</span>
                     </label>
                 </div>
             </div>
@@ -325,63 +372,74 @@
             <div class="h-80 overflow-y-auto pr-2 space-y-5 text-xs text-gray-600 leading-relaxed text-justify custom-scrollbar">
                 
                 <div>
-                    <strong class="text-brand-text text-sm block mb-1">第1條：買賣標的</strong>
+                    <strong class="text-brand-text text-sm block mb-1">第一條：買賣標的</strong>
                     <p>甲乙雙方買賣之特定寵物為動物保護法第3條第5款之所指犬、貓。</p>
                 </div>
 
                 <div>
-                    <strong class="text-brand-text text-sm block mb-1">第2條：買賣價金及契約效力</strong>
-                    <p>買賣總價款及支付方式如前述。自 <span class="font-bold text-brand-purple">乙方</span> 完成交付標的物並由 <span class="font-bold text-brand-purple">甲方</span> 付訖價金後，所有權轉移生效。</p>
+                    <strong class="text-brand-text text-sm block mb-1">第二條：買賣價金及契約效力</strong>
+                    <p>買賣總價款及支付方式如前述。自 <span class="font-bold text-brand-purple">乙方</span> 完成交付標的物並由 <span class="font-bold text-brand-purple">甲方</span> 付訖價金後，所有權轉移生效。乙方如支付定金，在未完成餘款交付前，如寵物染病或死亡，甲方應盡告知義務並退還定金或更換。</p>
                 </div>
 
                 <div>
-                    <strong class="text-brand-text text-sm block mb-1">第3條：寵物責任擔保條款</strong>
+                    <strong class="text-brand-text text-sm block mb-1">第三條：寵物責任擔保條款 (重點)</strong>
                     <ul class="list-decimal pl-4 space-y-1">
-                        <li>交付後48小時內，如診斷患有發高燒、持續性下痢或嘔吐、肺炎，<span class="font-bold text-brand-purple">乙方</span> 應無條件收回照顧或更換同等值寵物。</li>
-                        <li>交付後15天內，罹患狂犬病、犬瘟熱、犬小病毒；或7天內罹患出血性腸炎、貓瘟等，<span class="font-bold text-brand-purple">乙方</span> 應負責。</li>
-                        <li>交付後180天內，經診斷患有先天性或遺傳性疾病，<span class="font-bold text-brand-purple">乙方</span> 應更換同等值寵物。</li>
+                        <li><span class="font-bold text-red-500">48小時內</span>：標的寵物交付後，如診斷患有發高燒、持續性下痢或嘔吐、肺炎病症，經合格動物醫院開立證明，甲方應無條件收回，並更換同等值幼貓。</li>
+                        <li><span class="font-bold text-red-500">7天內</span>：標的寵物交付後，如罹患出血性腸炎、冠狀病毒性腸炎及傳染性腹膜炎疾病，經合格動物醫院證明，甲方應無條件收回並更換同等值幼貓。</li>
+                        <li><span class="font-bold text-red-500">15天內</span>：標的寵物交付後，如罹患狂犬病、犬瘟熱，經合格動物醫院證明，甲方應無條件收回並更換同等值幼貓。</li>
+                        <li><span class="font-bold text-red-500">180天內</span>：標的寵物交付後，經診斷證明患有先天性或遺傳性癲癇、髖關節疾病、心臟、青光眼或耳聾疾病，甲方應更換同等值幼貓予乙方。</li>
+                        <li>乙方如未依約定辦理，標的寵物視為健康狀況正常，爾後發生之疾病由乙方自行負責。</li>
                     </ul>
                 </div>
 
                 <div>
-                    <strong class="text-brand-text text-sm block mb-1">第4條：權利義務</strong>
-                    <p><span class="font-bold text-brand-purple">乙方</span> 應提供：寵物登記證明、飼養須知、檢驗證明書、來源母體晶片號碼。</p>
+                    <strong class="text-brand-text text-sm block mb-1">第四條：責任除外條款</strong>
+                    <p>凡屬天然災害、意外傷害、及其他不可抗力或因飼養不當人為因素所造成之標的寵物死亡或疾病，不適用於本契約所訂之責任擔保範圍內。未依規定完成寵物登記者，亦不適用前條擔保。</p>
                 </div>
 
                 <div>
-                    <strong class="text-brand-text text-sm block mb-1">第5條：責任除外</strong>
-                    <p>凡屬天然災害、意外傷害及人為飼養不當所致之傷病死亡，不適用擔保。</p>
+                    <strong class="text-brand-text text-sm block mb-1">第五條：遲延責任</strong>
+                    <p>乙方應按時給付價金，如有遲延，經甲方催告仍不履行時，甲方得解除本契約，沒收已付之價金及標的寵物。</p>
                 </div>
 
                 <div>
-                    <strong class="text-brand-text text-sm block mb-1">第6條：遲延責任</strong>
-                    <p><span class="font-bold text-brand-purple">甲方</span> 應按時給付價金及受領寵物，經催告仍不履行者，<span class="font-bold text-brand-purple">乙方</span> 得解除契約並沒收已付價金。</p>
+                    <strong class="text-brand-text text-sm block mb-1">第六條：給付不能</strong>
+                    <p>因不可歸責於雙方事由致甲方給付不能，甲方應返還價金及利息。</p>
                 </div>
 
                 <div>
-                    <strong class="text-brand-text text-sm block mb-1">第7條：契約之解除</strong>
-                    <p><span class="font-bold text-brand-purple">甲方</span> 得拋棄定金解除契約；<span class="font-bold text-brand-purple">乙方</span> 如不願出售，得加倍返還定金解除。</p>
+                    <strong class="text-brand-text text-sm block mb-1">第七條：契約之解除</strong>
+                    <p>乙方支付定金後不願買受，得拋棄定金解除契約。甲方不願出售時，得加倍返還定金解除契約。</p>
                 </div>
 
                 <div>
-                    <strong class="text-brand-text text-sm block mb-1">第8條：其他規定</strong>
-                    <p>本契約未盡事宜，依相關法令及誠信原則辦理。</p>
+                    <strong class="text-brand-text text-sm block mb-1">第八條：未盡事項</strong>
+                    <p>本契約未盡事宜，依民法及相關法令與誠信原則辦理。</p>
                 </div>
 
                 <div>
-                    <strong class="text-brand-text text-sm block mb-1">第9條：爭議調解</strong>
-                    <p>雙方同意由新北市寵物商業同業公會調解，或以臺灣新北地方法院為第一審管轄法院。</p>
+                    <strong class="text-brand-text text-sm block mb-1">第九條：爭議調解及合意管轄</strong>
+                    <p>因本契約發生之爭議，雙方同意先送交轄區寵物商業同業公會調解，若未能調解，雙方同意以 <span class="font-bold text-brand-purple">台中市地方法院</span> 為第一審管轄法院。</p>
                 </div>
 
                 <div>
-                    <strong class="text-brand-text text-sm block mb-1">第10條：契約份數</strong>
-                    <p>本契約壹式2份，由甲乙雙方各執1份為憑。</p>
+                    <strong class="text-brand-text text-sm block mb-1">第十條：契約份數</strong>
+                    <p>本契約壹式二份，由甲乙雙方各執一份為憑。</p>
+                </div>
+
+                <div>
+                    <strong class="text-brand-text text-sm block mb-1">附約</strong>
+                    <ul class="list-decimal pl-4 space-y-1">
+                        <li>如貓咪經獸醫檢查有冠狀病毒但貓咪未發病，不得要求甲方退還售金或任何賠償。</li>
+                        <li>交貓日需依獸醫判斷後才能確定交貓日期。</li>
+                        <li>下定後甲方不接受乙方因任何個人因素退定或換貓，若要求此項或堅決不要貓，甲方無需理會，定金照樣歸給甲方。</li>
+                    </ul>
                 </div>
             </div>
         </div>
         <label class="flex items-start gap-3 cursor-pointer group bg-brand-purple/5 p-3 rounded-xl border border-transparent hover:border-brand-purple/30 transition-all active:scale-[0.99]">
             <input type="checkbox" id="contractAgree" class="w-5 h-5 accent-brand-purple mt-0.5">
-            <span class="text-xs font-bold text-gray-600 group-hover:text-brand-purple transition-colors">我已詳閱並同意上述第1條至第10條契約內容。</span>
+            <span class="text-xs font-bold text-gray-600 group-hover:text-brand-purple transition-colors">我已詳閱並同意上述契約及附約內容。</span>
         </label>
     </section>
 
@@ -389,42 +447,48 @@
         <div class="absolute -right-6 -top-6 w-24 h-24 bg-brand-purple/5 rounded-full blur-xl"></div>
         
         <h3 class="text-sm font-black text-brand-purple uppercase tracking-wider flex items-center gap-2 relative z-10">
-            <i data-lucide="store" class="w-4 h-4"></i> 賣方資訊 (乙方)
+            <i data-lucide="store" class="w-4 h-4"></i> 賣方資訊 (甲方)
         </h3>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-brand-purple/5 p-4 rounded-xl text-sm relative z-10 border border-brand-purple/10">
             <div class="md:col-span-2">
                 <span class="text-gray-400 text-[10px] block mb-1">店家名稱</span>
-                <span class="font-bold text-brand-text text-base">貝可米努奶喵館</span>
+                <span class="font-bold text-brand-text text-base">貝可米奶喵館</span>
             </div>
 
             <div>
                 <span class="text-gray-400 text-[10px] block mb-1">負責人姓名</span>
                 <div class="flex items-end gap-2">
-                    <span class="font-bold text-brand-text text-lg leading-none">XXX</span>
+                    <span class="font-bold text-brand-text text-lg leading-none">周凡尊</span>
                 </div>
             </div>
 
             <div>
+                <span class="text-gray-400 text-[10px] block mb-1">統一編號</span>
+                <span class="font-bold text-brand-text font-mono">87194637</span>
+            </div>
+
+            <div class="md:col-span-2">
                 <span class="text-gray-400 text-[10px] block mb-1">聯絡電話</span>
-                <span class="font-bold text-brand-text">0988-733-384</span>
+                <div class="flex flex-col">
+                    <span class="font-bold text-brand-text">0988-733-384</span>
+                    <span class="font-bold text-brand-text">0906-831-591</span>
+                </div>
             </div>
 
             <div class="md:col-span-2">
                 <span class="text-gray-400 text-[10px] block mb-1">營業地址</span>
-                <span class="font-bold text-brand-text">台中市西屯區福星路324號1樓</span>
+                <span class="font-bold text-brand-text">台中市西屯區福星路324-1號1樓</span>
             </div>
 
             <div class="w-full h-px bg-brand-purple/10 md:col-span-2 my-1"></div>
 
-            <div>
+            <div class="md:col-span-2">
                 <span class="text-gray-400 text-[10px] block mb-1">許可證字號</span>
-                <span class="font-bold text-brand-text font-mono">特寵業字第G1140016號</span>
-            </div>
-
-            <div>
-                <span class="text-gray-400 text-[10px] block mb-1">統一編號</span>
-                <span class="font-bold text-brand-text font-mono">XXXXXXXX</span>
+                <div class="flex flex-col gap-1">
+                    <span class="font-bold text-brand-text font-mono text-xs">台中店特寵字號第S1140057號</span>
+                    <span class="font-bold text-brand-text font-mono text-xs">彰化店特寵字號第G1140016號</span>
+                </div>
             </div>
         </div>
     </section>
@@ -436,7 +500,7 @@
                 <div class="w-12 h-12 bg-brand-purple/10 text-brand-purple rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-brand-purple group-hover:text-white transition-colors duration-300 shadow-sm">
                     <i data-lucide="pen-tool" class="w-6 h-6"></i>
                 </div>
-                <p class="text-xs font-bold text-gray-400 group-hover:text-brand-purple transition-colors">點擊簽署 (甲方/買方)</p>
+                <p class="text-xs font-bold text-gray-400 group-hover:text-brand-purple transition-colors">點擊簽署 (乙方/買方)</p>
                 <p class="text-[10px] text-gray-300 mt-1" id="date-buyer"></p>
             </div>
         </div>
@@ -586,14 +650,14 @@
 
                 <div>
                     <label class="text-xs font-bold text-gray-400 mb-2 block ml-1">過往病史 (可複選) *</label>
-                    <div class="flex gap-4 mb-2">
-                        <label class="flex items-center gap-2 cursor-pointer p-2 -ml-2 rounded-xl hover:bg-brand-pink/5 transition-all active:scale-95">
-                            <input type="radio" name="petHistory" value="no" onchange="toggleHistory(false)" class="accent-brand-pink w-4 h-4"> 
-                            <span class="text-sm font-bold text-gray-600">無</span>
+                    <div class="grid grid-cols-2 gap-4 mb-2">
+                        <label class="flex items-center justify-center gap-2 cursor-pointer p-3.5 rounded-xl border border-gray-200 bg-white hover:bg-green-50 hover:border-green-200 transition-all active:scale-95 shadow-sm">
+                            <input type="radio" name="petHistory" value="no" onchange="toggleHistory(false)" class="accent-green-500 w-5 h-5"> 
+                            <span class="text-base font-bold text-green-600">無</span>
                         </label>
-                        <label class="flex items-center gap-2 cursor-pointer p-2 rounded-xl hover:bg-brand-pink/5 transition-all active:scale-95">
-                            <input type="radio" name="petHistory" value="yes" onchange="toggleHistory(true)" class="accent-brand-pink w-4 h-4"> 
-                            <span class="text-sm font-bold text-red-500">有</span>
+                        <label class="flex items-center justify-center gap-2 cursor-pointer p-3.5 rounded-xl border border-gray-200 bg-white hover:bg-red-50 hover:border-red-200 transition-all active:scale-95 shadow-sm">
+                            <input type="radio" name="petHistory" value="yes" onchange="toggleHistory(true)" class="accent-red-500 w-5 h-5"> 
+                            <span class="text-base font-bold text-red-500">有</span>
                         </label>
                     </div>
                     
@@ -707,50 +771,6 @@
                     </div>
             </section>
 
-            <section class="glass-card p-6 space-y-4 relative overflow-hidden">
-                <div class="absolute -right-6 -top-6 w-24 h-24 bg-brand-pink/5 rounded-full blur-xl"></div>
-                
-                <h3 class="text-sm font-black text-gray-500 uppercase tracking-wider flex items-center gap-2 relative z-10">
-                    <i data-lucide="store" class="w-4 h-4"></i> 乙方 (業者資訊)
-                </h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-brand-pink/5 p-4 rounded-xl text-sm relative z-10">
-                    <div>
-                        <span class="text-gray-400 text-xs block mb-1">店家名稱</span>
-                        <span class="font-bold text-gray-700">貝可米努奶喵館</span>
-                    </div>
-                    <div>
-                        <span class="text-gray-400 text-xs block mb-1">負責人姓名</span>
-                        <span class="font-bold text-gray-700">請填寫負責人</span>
-                    </div>
-                    <div>
-                        <span class="text-gray-400 text-xs block mb-1">聯絡電話</span>
-                        <span class="font-bold text-gray-700">0988-733-384</span>
-                    </div>
-                    <div>
-                        <span class="text-gray-400 text-xs block mb-1">許可證字號</span>
-                        <span class="font-bold text-gray-700">特寵業字第G1140016號</span>
-                    </div>
-                    
-                    <div class="md:col-span-2">
-                        <span class="text-gray-400 text-xs block mb-1">營業地址</span>
-                        <span class="font-bold text-gray-700">台中市西屯區福星路324號1樓</span>
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <span class="text-gray-400 text-xs block mb-1">營業時間</span>
-                        <span class="font-bold text-gray-700">週一至週日 11:00 - 23:30</span>
-                    </div>
-
-                    <div class="md:col-span-2 bg-white/60 p-2.5 rounded-xl border border-brand-pink/10 shadow-sm">
-                        <span class="text-red-400 text-xs block mb-1 font-bold flex items-center gap-1">
-                            <i data-lucide="ambulance" class="w-3.5 h-3.5"></i> 緊急就醫特約診所
-                        </span>
-                        <span class="font-bold text-gray-700">請填寫特約動物醫院名稱</span>
-                    </div>
-                </div>
-            </section>
-
             <section class="glass-card p-6 space-y-4">
                 <div class="bg-white rounded-2xl p-4 shadow-inner border border-gray-100">
                     <h4 class="font-bold text-sm mb-2 text-center text-brand-text flex items-center justify-center gap-2">
@@ -769,7 +789,51 @@
                     <input type="checkbox" id="groomingAgree" class="w-5 h-5 accent-brand-pink mt-0.5">
                     <span class="text-xs font-bold text-gray-600 group-hover:text-brand-pink transition-colors leading-5">本人已詳閱並同意以上契約內容，且確認上述寵物資料無誤。</span>
                 </label>
+            </section>
 
+            <section class="glass-card p-6 space-y-4 relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-brand-pink/5 rounded-full blur-xl"></div>
+                
+                <h3 class="text-sm font-black text-gray-500 uppercase tracking-wider flex items-center gap-2 relative z-10">
+                    <i data-lucide="store" class="w-4 h-4"></i> 乙方 (業者資訊)
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-brand-pink/5 p-4 rounded-xl text-sm relative z-10">
+                    <div>
+                        <span class="text-gray-400 text-xs block mb-1">公司或商號名稱</span>
+                        <span class="font-bold text-gray-700">貝可米努奶喵館</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-xs block mb-1">負責人姓名</span>
+                        <span class="font-bold text-gray-700">周凡尊</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-xs block mb-1">聯絡電話</span>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-700">0988-733-384</span>
+                            <span class="font-bold text-gray-700">0906-831-591</span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-xs block mb-1">營業時間</span>
+                        <span class="font-bold text-gray-700">營業日 採預約制</span>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <span class="text-gray-400 text-xs block mb-1">營業地址</span>
+                        <span class="font-bold text-gray-700">台中市西屯區福星路324-1號1樓</span>
+                    </div>
+
+                    <div class="md:col-span-2 bg-white/60 p-2.5 rounded-xl border border-brand-pink/10 shadow-sm">
+                        <span class="text-red-400 text-xs block mb-1 font-bold flex items-center gap-1">
+                            <i data-lucide="ambulance" class="w-3.5 h-3.5"></i> 緊急就醫特約診所
+                        </span>
+                        <span class="font-bold text-gray-700">(待確認)</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="glass-card p-6 space-y-4">
                 <div onclick="openSignatureModal('owner')" class="bg-white border-2 border-dashed border-gray-200 h-44 rounded-2xl flex items-center justify-center cursor-pointer hover:border-brand-pink hover:bg-brand-pink/5 transition-all relative overflow-hidden group active:scale-[0.98]">
                     <img id="img-owner" class="hidden h-full w-full object-contain p-4 absolute inset-0 bg-white">
                     <div id="placeholder-owner" class="text-xs font-bold text-gray-400 flex flex-col items-center gap-2 group-hover:text-brand-pink transition-colors">
@@ -998,6 +1062,16 @@
             } else {
                 el.classList.add('hidden');
                 el.value = ''; // 選擇「無」的時候清空內容
+            }
+        }
+        
+        // 切換付款欄位顯示
+        function togglePaymentFields(showSplit) {
+            const fields = document.getElementById('splitPaymentFields');
+            if (showSplit) {
+                fields.classList.remove('hidden');
+            } else {
+                fields.classList.add('hidden');
             }
         }
         
